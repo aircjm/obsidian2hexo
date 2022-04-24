@@ -55,13 +55,18 @@ func GetMdList(list []ObsidianNote) []ObsidianNote {
 			fmt.Errorf("处理失败")
 		}
 		// 开始解析yaml formatter
-		s := string(bytes)
-		m := regexp.MustCompile(hexoFormatterRegex).FindString(s)
-		yml := HexoFormatter{}
+		md := string(bytes)
+		m := regexp.MustCompile(hexoFormatterRegex).FindString(md)
+		yml := FrontMatter{}
 		err = yaml.Unmarshal([]byte(m), &yml)
 		if err != nil {
 			fmt.Println("转化yaml配置失败")
 		}
+		note.FrontMatter = yml
+		// fmt.Println(note.FrontMatter)
+		// 没有了formatter就是content
+		content := regexp.MustCompile(hexoFormatterRegex).ReplaceAllString(md, "")
+		note.Content = content
 
 	}
 	return mdList
