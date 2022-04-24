@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"gopkg.in/yaml.v2"
 	"io/ioutil"
 	"path"
 	"path/filepath"
@@ -9,8 +10,7 @@ import (
 	"strings"
 )
 
-
-
+const hexoFormatterRegex = `(?i)(?m)(?s)---.*?---`
 
 func LoadDir(path string, list *[]ObsidianNote) {
 	// 开始读文件夹
@@ -34,7 +34,7 @@ func LoadDir(path string, list *[]ObsidianNote) {
 	}
 }
 
-func readFile(pathStr string)  ObsidianNote {
+func readFile(pathStr string) ObsidianNote {
 	o := new(ObsidianNote)
 	o.Title = path.Base(pathStr)
 	o.FileName = path.Base(pathStr)
@@ -43,11 +43,8 @@ func readFile(pathStr string)  ObsidianNote {
 	return *o
 }
 
-
-
 func GetMdList(list []ObsidianNote) []ObsidianNote {
-	var mdList  []ObsidianNote
-
+	var mdList []ObsidianNote
 	for _, note := range list {
 		if path.Ext(note.FilePath) != ".md" {
 			continue
@@ -57,12 +54,32 @@ func GetMdList(list []ObsidianNote) []ObsidianNote {
 		if err != nil {
 			fmt.Errorf("处理失败")
 		}
+		// 开始解析yaml formatter
 		s := string(bytes)
-		m := regexp.MustCompile(`(?i)(?m)(?s)---.*?---`).ReplaceAllString(s, "")
-		fmt.Println(m)
+		m := regexp.MustCompile(hexoFormatterRegex).FindString(s)
+		yml := HexoFormatter{}
+		err = yaml.Unmarshal([]byte(m), &yml)
+		if err != nil {
+			fmt.Println("转化yaml配置失败")
+		}
+
 	}
-
-
 	return mdList
 }
 
+/**
+---
+createAt: 2022-04-20 20:04:05
+updateAt: 2022-04-20 20:04:05
+publish: false
+draft: true
+cards-deck: Default
+---
+*/
+type HexoFormatter struct {
+	CreateAt  string `yaml:"createAt"`
+	UpdateAt  string `yaml:"updateAt"`
+	Publish   bool   `yaml:"publish"`
+	Draft     bool   `yaml:"draft"`
+	CardsDeck string `yaml:"cards-deck"`
+}
