@@ -11,6 +11,7 @@ import (
 )
 
 const hexoFormatterRegex = `(?i)(?m)(?s)---.*?---`
+const obsidianImgRegex = `!\[\[.*\]\]`
 
 func LoadDir(path string, list *[]ObsidianNote) {
 	// 开始读文件夹
@@ -36,10 +37,10 @@ func LoadDir(path string, list *[]ObsidianNote) {
 
 func readFile(pathStr string) ObsidianNote {
 	o := new(ObsidianNote)
-	o.Title = path.Base(pathStr)
-	o.FileName = path.Base(pathStr)
+	o.FileName = filepath.Base(pathStr)
 	o.FilePath = pathStr
 	o.FileType = path.Ext(pathStr)
+	o.Title = o.FileName[0 : len(o.FileName)-len(o.FileType)]
 	return *o
 }
 
@@ -49,7 +50,6 @@ func GetMdList(list []ObsidianNote) []ObsidianNote {
 		if path.Ext(note.FilePath) != ".md" {
 			continue
 		}
-
 		bytes, err := ioutil.ReadFile(note.FilePath)
 		if err != nil {
 			fmt.Errorf("处理失败")
@@ -67,6 +67,12 @@ func GetMdList(list []ObsidianNote) []ObsidianNote {
 		// 没有了formatter就是content
 		content := regexp.MustCompile(hexoFormatterRegex).ReplaceAllString(md, "")
 		note.Content = content
+
+		// 查找图片附件的双向链接
+		findAllString := regexp.MustCompile(obsidianImgRegex).FindAllString(md, -1)
+		for _, s := range findAllString {
+			fmt.Println(s)
+		}
 
 	}
 	return mdList
