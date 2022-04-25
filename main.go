@@ -5,18 +5,15 @@ import (
 	"bytes"
 	"errors"
 	"fmt"
+	"gopkg.in/yaml.v2"
 	"io/ioutil"
 	"path/filepath"
 	"strings"
-	"gopkg.in/yaml.v2"
 )
 
+var AllNote []ObsidianNote
 
-var AllNote  []ObsidianNote
-
-
-
-func main()  {
+func main() {
 	fmt.Println("开始处理")
 
 	// 读取obsidian文件夹
@@ -28,7 +25,6 @@ func main()  {
 	println(len(AllNote))
 	println(len(directory.Notes))
 }
-
 
 // FrontMatter is meta information for markdown documents
 type FrontMatter map[string]interface{}
@@ -43,19 +39,17 @@ type ObsidianDirectory struct {
 	Files  []string
 }
 
-
 // ObsidianNote is a single note in Obsidian
 type ObsidianNote struct {
 	FrontMatter
 	Title     string
 	Content   string
+	MarkDown  string
 	Directory *ObsidianDirectory
 	FileName  string
-	FilePath string
-	FileType string
+	FilePath  string
+	FileType  string
 }
-
-
 
 // LoadObsidianNote loads an Obsidian note from disk at given path
 func LoadObsidianNote(path string) (ObsidianNote, error) {
@@ -77,7 +71,6 @@ func LoadObsidianNote(path string) (ObsidianNote, error) {
 		Content:     content,
 	}, nil
 }
-
 
 func ParseFrontMatterMarkdown(content []byte) (FrontMatter, string, error) {
 	metaLines := make([]string, 0)
@@ -109,14 +102,13 @@ func ParseFrontMatterMarkdown(content []byte) (FrontMatter, string, error) {
 
 	return FrontMatter(meta), strings.TrimSpace(strings.Join(bodyLines, "\n")), nil
 }
+
 var (
 	ErrNoFrontMatter = errors.New("missing front matter")
 )
 
 // ObsidianFilter includes or excludes a note
 type ObsidianFilter func(ObsidianNote) bool
-
-
 
 // LoadObsidianDirectory reads all notes and sub-directories within a directory in an Obsidian vault
 func LoadObsidianDirectory(path string, filter ObsidianFilter, recurse bool) (root ObsidianDirectory, err error) {
@@ -132,7 +124,6 @@ func LoadObsidianDirectory(path string, filter ObsidianFilter, recurse bool) (ro
 	root.Childs = make([]ObsidianDirectory, 0)
 	root.Files = make([]string, 0)
 	root.Notes = make([]ObsidianNote, 0)
-
 
 	for _, fi := range fis {
 
@@ -197,5 +188,3 @@ func LoadObsidianDirectory(path string, filter ObsidianFilter, recurse bool) (ro
 
 	return
 }
-
-

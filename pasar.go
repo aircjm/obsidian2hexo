@@ -13,6 +13,11 @@ import (
 const hexoFormatterRegex = `(?i)(?m)(?s)---.*?---`
 const obsidianImgRegex = `!\[\[.*\]\]`
 
+type HexoBlog struct {
+	BlogList  *[]ObsidianNote
+	ImageList []string
+}
+
 func LoadDir(path string, list *[]ObsidianNote) {
 	// 开始读文件夹
 	fis, err := ioutil.ReadDir(path)
@@ -44,8 +49,14 @@ func readFile(pathStr string) ObsidianNote {
 	return *o
 }
 
-func GetMdList(list []ObsidianNote) []ObsidianNote {
-	var mdList []ObsidianNote
+func ConvertHexoBlog(list []ObsidianNote) {
+
+	fileMap := make(map[string]ObsidianNote)
+
+	for _, note := range list {
+		fileMap[note.FileName] = note
+	}
+
 	for _, note := range list {
 		if path.Ext(note.FilePath) != ".md" {
 			continue
@@ -71,11 +82,14 @@ func GetMdList(list []ObsidianNote) []ObsidianNote {
 		// 查找图片附件的双向链接
 		findAllString := regexp.MustCompile(obsidianImgRegex).FindAllString(md, -1)
 		for _, s := range findAllString {
-			fmt.Println(s)
+			fileFullName := s[3 : len(s)-2]
+			fmt.Println(fileFullName)
+			// 图片类型处理链接替换
+			imgLink := "![" + fileFullName + "](./image/" + fileFullName + ")"
+			note.MarkDown = strings.Replace(content, s, imgLink, -1)
 		}
-
 	}
-	return mdList
+
 }
 
 /**
