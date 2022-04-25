@@ -13,11 +13,6 @@ import (
 const hexoFormatterRegex = `(?i)(?m)(?s)---.*?---`
 const obsidianImgRegex = `!\[\[.*\]\]`
 
-type HexoBlog struct {
-	BlogList  *[]ObsidianNote
-	ImageList []string
-}
-
 func LoadDir(path string, list *[]ObsidianNote) {
 	// 开始读文件夹
 	fis, err := ioutil.ReadDir(path)
@@ -51,7 +46,11 @@ func readFile(pathStr string) ObsidianNote {
 
 func ConvertHexoBlog(list []ObsidianNote) {
 
+	s := "C:\\Users\\admin\\Desktop\\hexo"
+
 	fileMap := make(map[string]ObsidianNote)
+
+	var att []string
 
 	for _, note := range list {
 		fileMap[note.FileName] = note
@@ -74,6 +73,12 @@ func ConvertHexoBlog(list []ObsidianNote) {
 			fmt.Println("转化yaml配置失败")
 		}
 		note.FrontMatter = yml
+
+		if note.FrontMatter["publish"] != true {
+			fmt.Println("无需生成")
+			continue
+		}
+
 		// fmt.Println(note.FrontMatter)
 		// 没有了formatter就是content
 		content := regexp.MustCompile(hexoFormatterRegex).ReplaceAllString(md, "")
@@ -85,10 +90,15 @@ func ConvertHexoBlog(list []ObsidianNote) {
 			fileFullName := s[3 : len(s)-2]
 			fmt.Println(fileFullName)
 			// 图片类型处理链接替换
-			imgLink := "![" + fileFullName + "](./image/" + fileFullName + ")"
+			imgLink := "![" + fileFullName + "](./attachments/" + fileFullName + ")"
 			note.MarkDown = strings.Replace(content, s, imgLink, -1)
+			att = append(att, fileMap[fileFullName].FilePath)
 		}
+
 	}
+
+	// 保存所有的文章
+	fmt.Println("开始保存到：", s)
 
 }
 

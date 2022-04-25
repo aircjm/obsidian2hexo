@@ -42,13 +42,14 @@ type ObsidianDirectory struct {
 // ObsidianNote is a single note in Obsidian
 type ObsidianNote struct {
 	FrontMatter
-	Title     string
-	Content   string
-	MarkDown  string
-	Directory *ObsidianDirectory
-	FileName  string
-	FilePath  string
-	FileType  string
+	Title       string
+	Content     string
+	MarkDown    string
+	Directory   *ObsidianDirectory
+	FileName    string
+	FilePath    string
+	FileType    string
+	Attachments []string
 }
 
 // LoadObsidianNote loads an Obsidian note from disk at given path
